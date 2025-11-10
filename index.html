@@ -6,6 +6,8 @@
   <title>Sitar AR Viewer</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-gesture-detector.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-gesture-handler.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -151,12 +153,12 @@
 
   <!-- AR Instructions -->
   <div id="arInstructions">
-    📱 <strong>AR Troubleshooting:</strong><br>
+    📱 <strong>AR Controls:</strong><br>
     1. <a href="https://ar-js-org.github.io/AR.js/data/images/hiro.png" target="_blank" class="ar-link">Download & Print Hiro Marker</a><br>
-    2. Ensure good lighting (not too bright/dark)<br>
-    3. Hold marker steady, about 30cm from camera<br>
-    4. You should see a RED BOX and GREEN TEXT first<br>
-    5. If nothing appears, try refreshing the page
+    2. Point camera at marker (good lighting needed)<br>
+    3. <strong>Touch & drag</strong> to rotate the sitar<br>
+    4. <strong>Pinch</strong> to zoom in/out<br>
+    5. <strong>Two fingers</strong> to rotate freely
   </div>
 
   <a-scene 
@@ -164,7 +166,8 @@
     arjs="sourceType: webcam; debugUIEnabled: true; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; maxDetectionRate: 60; canvasWidth: 640; canvasHeight: 480;"
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; colorManagement: true;"
-    gesture-detector>
+    gesture-detector
+    id="scene">
     <!-- Load your sitar model and audio -->
     <a-assets>
       <a-asset-item id="sitarModel" src="./sitar.glb"></a-asset-item>
@@ -179,7 +182,7 @@
     <a-light type="directional" position="0 1 0" color="#ffffff" intensity="1.5"></a-light>
 
     <!-- AR Marker for Hiro pattern -->
-    <a-marker preset="hiro" id="hiroMarker" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+    <a-marker preset="hiro" id="hiroMarker" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5" gesture-handler>
       <!-- Display the 3D sitar model on marker -->
       <a-entity 
         id="sitarEntity"
@@ -188,7 +191,8 @@
         rotation="90 0 0" 
         scale="3 3 3"
         material="color: #8B4513"
-        animation="property: rotation; to: 90 360 0; loop: true; dur: 15000; easing: linear">
+        gesture-handler="minScale: 0.25; maxScale: 10"
+        class="clickable">
       </a-entity>
 
       <!-- Add a simple box as backup to test marker detection -->
@@ -232,7 +236,7 @@
       hiroMarker.addEventListener('markerFound', () => {
         console.log('✅ Hiro marker found!');
         markerFound = true;
-        document.getElementById('arInstructions').innerHTML = '✅ <strong>Marker Detected!</strong> You should see a red box, green text, and the sitar!';
+        document.getElementById('arInstructions').innerHTML = '✅ <strong>Sitar Ready!</strong> Touch & drag to rotate, pinch to zoom!';
         document.getElementById('arInstructions').style.background = 'rgba(0, 128, 0, 0.8)';
       });
 
@@ -240,12 +244,12 @@
         console.log('❌ Hiro marker lost!');
         markerFound = false;
         document.getElementById('arInstructions').innerHTML = `
-          📱 <strong>AR Troubleshooting:</strong><br>
+          📱 <strong>AR Controls:</strong><br>
           1. <a href="https://ar-js-org.github.io/AR.js/data/images/hiro.png" target="_blank" class="ar-link">Download & Print Hiro Marker</a><br>
-          2. Ensure good lighting (not too bright/dark)<br>
-          3. Hold marker steady, about 30cm from camera<br>
-          4. You should see a RED BOX and GREEN TEXT first<br>
-          5. If nothing appears, try refreshing the page
+          2. Point camera at marker (good lighting needed)<br>
+          3. <strong>Touch & drag</strong> to rotate the sitar<br>
+          4. <strong>Pinch</strong> to zoom in/out<br>
+          5. <strong>Two fingers</strong> to rotate freely
         `;
         document.getElementById('arInstructions').style.background = 'rgba(0, 0, 0, 0.8)';
       });

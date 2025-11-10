@@ -187,30 +187,14 @@
       <a-entity 
         id="sitarEntity"
         gltf-model="#sitarModel" 
-        position="0 1 0" 
-        rotation="90 0 0" 
+        position="0 0 0" 
+        rotation="0 0 0" 
         scale="3 3 3"
         material="color: #8B4513"
         gesture-handler="minScale: 0.25; maxScale: 10"
         class="clickable">
       </a-entity>
 
-      <!-- Add a simple box as backup to test marker detection -->
-      <a-box 
-        position="1 0.5 0" 
-        material="color: red;" 
-        scale="0.3 0.3 0.3"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 5000;">
-      </a-box>
-
-      <!-- Add text for debugging -->
-      <a-text 
-        value="Marker Found!" 
-        position="0 1 0" 
-        align="center" 
-        color="green"
-        scale="2 2 2">
-      </a-text>
     </a-marker>
 
   </a-scene>

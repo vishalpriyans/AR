@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sitar AR Viewer</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    #audioControls {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #arInstructions {
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      min-height: 48px;
+      min-width: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:hover, button:active {
+      background: #45a049;
+      transform: scale(0.98);
+    }
+    .ar-link {
+      color: #4CAF50;
+      text-decoration: underline;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(76, 175, 80, 0.1);
+    }
+    #audioStatus {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      #audioControls {
+        top: 10px;
+        left: 10px;
+        padding: 10px 14px;
+        border-radius: 20px;
+      }
+      #arInstructions {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 16px;
+        font-size: 15px;
+        border-radius: 16px;
+      }
+      button {
+        padding: 12px 16px;
+        font-size: 15px;
+        min-height: 44px;
+      }
+      #audioStatus {
+        font-size: 13px;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 480px) {
+      #audioControls {
+        top: 8px;
+        left: 8px;
+        padding: 8px 12px;
+      }
+      #arInstructions {
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        padding: 14px;
+        font-size: 14px;
+        max-height: 35vh;
+      }
+      button {
+        padding: 10px 14px;
+        font-size: 14px;
+        min-height: 42px;
+      }
+      .ar-link {
+        display: inline-block;
+        margin: 2px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Audio controls -->
+  <div id="audioControls">
+    <button onclick="toggleAudio()">🔊 Toggle Audio</button>
+    <span id="audioStatus">Audio: Playing</span>
+  </div>
+
+  <!-- AR Instructions -->
+  <div id="arInstructions">
+    📱 <strong>AR Troubleshooting:</strong><br>
+    1. <a href="https://ar-js-org.github.io/AR.js/data/images/hiro.png" target="_blank" class="ar-link">Download & Print Hiro Marker</a><br>
+    2. Ensure good lighting (not too bright/dark)<br>
+    3. Hold marker steady, about 30cm from camera<br>
+    4. You should see a RED BOX and GREEN TEXT first<br>
+    5. If nothing appears, try refreshing the page
+  </div>
+
+  <a-scene 
+    embedded 
+    arjs="sourceType: webcam; debugUIEnabled: true; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; maxDetectionRate: 60; canvasWidth: 640; canvasHeight: 480;"
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; colorManagement: true;"
+    gesture-detector>
+    <!-- Load your sitar model and audio -->
+    <a-assets>
+      <a-asset-item id="sitarModel" src="./sitar.glb"></a-asset-item>
+      <audio id="sitarAudio" src="./sitar.mp3" loop crossorigin="anonymous"></audio>
+    </a-assets>
+
+    <!-- AR Camera -->
+    <a-entity camera></a-entity>
+
+    <!-- Global lighting -->
+    <a-light type="ambient" color="#ffffff" intensity="1.0"></a-light>
+    <a-light type="directional" position="0 1 0" color="#ffffff" intensity="1.5"></a-light>
+
+    <!-- AR Marker for Hiro pattern -->
+    <a-marker preset="hiro" id="hiroMarker" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <!-- Display the 3D sitar model on marker -->
+      <a-entity 
+        id="sitarEntity"
+        gltf-model="#sitarModel" 
+        position="0 0 0" 
+        rotation="0 0 0" 
+        scale="1 1 1"
+        material="color: #8B4513"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
+      </a-entity>
+
+      <!-- Add a simple box as backup to test marker detection -->
+      <a-box 
+        position="1 0.5 0" 
+        material="color: red;" 
+        scale="0.3 0.3 0.3"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 5000;">
+      </a-box>
+
+      <!-- Add text for debugging -->
+      <a-text 
+        value="Marker Found!" 
+        position="0 1 0" 
+        align="center" 
+        color="green"
+        scale="2 2 2">
+      </a-text>
+    </a-marker>
+
+  </a-scene>
+
+  <script>
+    let audio;
+    let isPlaying = false;
+    let markerFound = false;
+
+    // Initialize audio and AR when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      audio = document.getElementById('sitarAudio');
+      
+      // Set up audio properties
+      audio.volume = 0.7;
+      
+      // Auto-play with user interaction fallback
+      startAudio();
+
+      // AR marker detection events
+      const hiroMarker = document.getElementById('hiroMarker');
+      
+      hiroMarker.addEventListener('markerFound', () => {
+        console.log('✅ Hiro marker found!');
+        markerFound = true;
+        document.getElementById('arInstructions').innerHTML = '✅ <strong>Marker Detected!</strong> You should see a red box, green text, and the sitar!';
+        document.getElementById('arInstructions').style.background = 'rgba(0, 128, 0, 0.8)';
+      });
+
+      hiroMarker.addEventListener('markerLost', () => {
+        console.log('❌ Hiro marker lost!');
+        markerFound = false;
+        document.getElementById('arInstructions').innerHTML = `
+          📱 <strong>AR Troubleshooting:</strong><br>
+          1. <a href="https://ar-js-org.github.io/AR.js/data/images/hiro.png" target="_blank" class="ar-link">Download & Print Hiro Marker</a><br>
+          2. Ensure good lighting (not too bright/dark)<br>
+          3. Hold marker steady, about 30cm from camera<br>
+          4. You should see a RED BOX and GREEN TEXT first<br>
+          5. If nothing appears, try refreshing the page
+        `;
+        document.getElementById('arInstructions').style.background = 'rgba(0, 0, 0, 0.8)';
+      });
+
+      // Debug: Check if AR.js is loaded
+      console.log('AR.js loaded:', typeof AFRAME !== 'undefined');
+      console.log('Camera permissions needed for AR');
+      
+      // Debug: Monitor A-Frame scene loading
+      document.querySelector('a-scene').addEventListener('loaded', () => {
+        console.log('✅ A-Frame scene loaded successfully');
+      });
+    });
+
+    function startAudio() {
+      audio.play().then(() => {
+        isPlaying = true;
+        updateAudioStatus();
+      }).catch((error) => {
+        console.log('Auto-play prevented. Click to start audio.');
+        // Show click-to-play message
+        document.getElementById('audioStatus').textContent = 'Click button to start audio';
+      });
+    }
+
+    function toggleAudio() {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+      } else {
+        audio.play().then(() => {
+          isPlaying = true;
+        }).catch((error) => {
+          console.error('Error playing audio:', error);
+        });
+      }
+      updateAudioStatus();
+    }
+
+    function updateAudioStatus() {
+      const status = document.getElementById('audioStatus');
+      status.textContent = isPlaying ? 'Audio: Playing' : 'Audio: Paused';
+    }
+
+    // Handle audio events
+    document.addEventListener('DOMContentLoaded', () => {
+      audio = document.getElementById('sitarAudio');
+      
+      audio.addEventListener('play', () => {
+        isPlaying = true;
+        updateAudioStatus();
+      });
+      
+      audio.addEventListener('pause', () => {
+        isPlaying = false;
+        updateAudioStatus();
+      });
+    });
+
+    // Request camera permissions
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        console.log('Camera access granted');
+      })
+      .catch(function(err) {
+        console.log('Camera access denied: ' + err);
+        alert('Camera access is required for AR functionality. Please allow camera access and refresh the page.');
+      });
+  </script>
+</body>
+</html>
